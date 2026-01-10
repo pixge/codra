@@ -8,7 +8,7 @@
 ## Installazione (core Python)
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
@@ -18,13 +18,13 @@ pip install -e .
 Analizza un percorso e stampa il report JSON su stdout:
 
 ```bash
-python -m codra.cli /percorso/progetto
+python3 -m codra.cli /percorso/progetto
 ```
 
 Esempio con soglie:
 
 ```bash
-python -m codra.cli /percorso/progetto --threshold-csa 10 --threshold-id 2 --threshold-bps 0.7
+python3 -m codra.cli /percorso/progetto --threshold-csa 10 --threshold-id 2 --threshold-bps 0.7
 ```
 
 ## Viewer React (opzionale)
