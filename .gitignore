@@ -6,3 +6,5 @@
 codra.egg-info/
 
 result.json
+
+viewer/node_modules/
