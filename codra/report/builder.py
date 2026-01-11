@@ -33,19 +33,8 @@ class ReportBuilder:
     def build(self, root_path: str) -> Report:
         logger.info("Collecting files from %s", root_path)
         file_paths = self.path_collector.collect(root_path)
-        files: list[FileReport] = []
-        total_units = 0
-        for file_path in file_paths:
-            logger.info("Analyzing %s", file_path)
-            csa_results, indirection_results, bps_results = self._collect_file_analysis(
-                file_path
-            )
-            file_report, unit_count = self._build_file_report(
-                file_path, csa_results, indirection_results, bps_results
-            )
-            files.append(file_report)
-            total_units += unit_count
-        summary = self._build_summary(files, total_units)
+        files = self._build_file_reports(file_paths)
+        summary = self._build_summary(files)
         return Report(
             schema_version="1.0",
             language="python",
@@ -54,6 +43,9 @@ class ReportBuilder:
         )
 
     def check_thresholds(self, report: Report, thresholds: ThresholdConfig) -> bool:
+        return self._apply_thresholds(report, thresholds)
+
+    def _apply_thresholds(self, report: Report, thresholds: ThresholdConfig) -> bool:
         for file_report in report.files:
             for unit in file_report.units:
                 metrics = unit.metrics
@@ -88,6 +80,19 @@ class ReportBuilder:
         bps_results = self.bps_analyzer.analyze_file(file_path)
         return csa_results, indirection_results, bps_results
 
+    def _build_file_reports(self, file_paths: list[str]) -> list[FileReport]:
+        files: list[FileReport] = []
+        for file_path in file_paths:
+            logger.info("Analyzing %s", file_path)
+            csa_results, indirection_results, bps_results = self._collect_file_analysis(
+                file_path
+            )
+            file_report, _ = self._build_file_report(
+                file_path, csa_results, indirection_results, bps_results
+            )
+            files.append(file_report)
+        return files
+
     def _build_file_report(
         self,
         file_path: str,
@@ -111,7 +116,8 @@ class ReportBuilder:
             units.append(UnitReport(unit=unit, metrics=metrics))
         return FileReport(file_path=file_path, units=units), len(units)
 
-    def _build_summary(self, files: list[FileReport], total_units: int) -> ReportSummary:
+    def _build_summary(self, files: list[FileReport]) -> ReportSummary:
+        total_units = sum(len(file_report.units) for file_report in files)
         return ReportSummary(total_files=len(files), total_units=total_units)
 
     def _resolve_unit(
