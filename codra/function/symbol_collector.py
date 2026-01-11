@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 import ast
+from ast import NodeVisitor
 from dataclasses import dataclass, field
 
 from .symbol_usage import FunctionSymbolUsage
 
 
 @dataclass
-class FunctionSymbolCollector(ast.NodeVisitor):
+class FunctionSymbolCollector(NodeVisitor):
+    """AST visitor collecting symbol usage via NodeVisitor."""
     usage: FunctionSymbolUsage = field(default_factory=FunctionSymbolUsage)
 
     def collect(self, node: ast.AST) -> FunctionSymbolUsage:
         self._add_arguments(node)
         for statement in node.body:
-            self.visit(statement)
+            super().visit(statement)
         return self.usage
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
@@ -45,15 +47,15 @@ class FunctionSymbolCollector(ast.NodeVisitor):
         if isinstance(node.ctx, ast.Load):
             if isinstance(node.value, ast.Name) and node.value.id == "self":
                 self.usage.self_fields_read.add(node.attr)
-        self.generic_visit(node)
+        super().generic_visit(node)
 
     def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
         if isinstance(node.name, str):
             self.usage.locals.add(node.name)
         elif node.name is not None:
-            self.visit(node.name)
+            super().visit(node.name)
         for statement in node.body:
-            self.visit(statement)
+            super().visit(statement)
 
     def _add_arguments(self, node: ast.AST) -> None:
         arguments = node.args
