@@ -25,4 +25,7 @@ class CallCollector(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node.func, ast.Name):
             self.calls.append(node.func.id)
+        elif isinstance(node.func, ast.Attribute):
+            if isinstance(node.func.value, ast.Name) and node.func.value.id == "self":
+                self.calls.append(f"self.{node.func.attr}")
         self.generic_visit(node)

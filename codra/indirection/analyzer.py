@@ -20,20 +20,31 @@ class IndirectionAnalyzer:
             source = handle.read()
         tree = ast.parse(source, filename=file_path)
         function_names = FunctionDefinitionCollector().collect(tree)
+        class_methods = self._collect_class_methods(tree)
         aliases = AliasCollector().collect(tree)
         module_symbols = ModuleSymbolCollector().collect(tree)
         builtin_names = set(dir(builtins))
         stdlib_modules = set(sys.stdlib_module_names)
-        call_graph = self._build_call_graph(tree, function_names, aliases)
+        call_graph = self._build_call_graph(tree, function_names, class_methods, aliases)
         depth_cache: dict[str, int] = {}
         results: list[IndirectionResult] = []
         unit_collector = UnitNodeCollector(file_path=file_path)
         unit_collector.visit(tree)
         for unit_node in unit_collector.units:
+            class_name = (
+                unit_node.definition.qualified_id.split(".", 1)[0]
+                if unit_node.definition.kind == "method"
+                else None
+            )
             call_names = CallCollector().collect(unit_node.node)
             resolved_calls: list[str] = []
             unresolved_calls: set[str] = set()
             for name in call_names:
+                if name.startswith("self.") and class_name:
+                    method_name = name.split(".", 1)[1]
+                    if method_name in class_methods.get(class_name, set()):
+                        resolved_calls.append(f"{class_name}.{method_name}")
+                        continue
                 resolved = self._resolve_alias(name, aliases)
                 if resolved in function_names:
                     resolved_calls.append(resolved)
@@ -65,13 +76,29 @@ class IndirectionAnalyzer:
             )
         return results
 
+    def _collect_class_methods(self, tree: ast.AST) -> dict[str, set[str]]:
+        class_methods: dict[str, set[str]] = {}
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef):
+                methods = {
+                    statement.name
+                    for statement in node.body
+                    if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef))
+                }
+                class_methods[node.name] = methods
+        return class_methods
+
     def _build_call_graph(
         self,
         tree: ast.AST,
         function_names: set[str],
+        class_methods: dict[str, set[str]],
         aliases: dict[str, str],
     ) -> dict[str, list[str]]:
         call_graph: dict[str, list[str]] = {name: [] for name in function_names}
+        for class_name, methods in class_methods.items():
+            for method_name in methods:
+                call_graph[f"{class_name}.{method_name}"] = []
         for node in tree.body:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name in function_names:
@@ -80,6 +107,25 @@ class IndirectionAnalyzer:
                         resolved = self._resolve_alias(name, aliases)
                         if resolved in function_names:
                             call_graph[node.name].append(resolved)
+            elif isinstance(node, ast.ClassDef):
+                methods = class_methods.get(node.name, set())
+                for statement in node.body:
+                    if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        qualified_name = f"{node.name}.{statement.name}"
+                        if qualified_name not in call_graph:
+                            continue
+                        call_names = CallCollector().collect(statement)
+                        for name in call_names:
+                            if name.startswith("self."):
+                                method_name = name.split(".", 1)[1]
+                                if method_name in methods:
+                                    call_graph[qualified_name].append(
+                                        f"{node.name}.{method_name}"
+                                    )
+                            else:
+                                resolved = self._resolve_alias(name, aliases)
+                                if resolved in function_names:
+                                    call_graph[qualified_name].append(resolved)
         return call_graph
 
     def _resolve_alias(self, name: str, aliases: dict[str, str]) -> str:

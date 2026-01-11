@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import ast
+import builtins
+import sys
 from dataclasses import dataclass
 
 from ..function.symbol_collector import FunctionSymbolCollector
@@ -16,6 +18,8 @@ class CsaAnalyzer:
             source = handle.read()
         tree = ast.parse(source, filename=file_path)
         module_symbols = ModuleSymbolCollector().collect(tree)
+        builtin_names = set(dir(builtins))
+        stdlib_modules = set(sys.stdlib_module_names)
         unit_collector = UnitNodeCollector(file_path=file_path)
         unit_collector.visit(tree)
         results: list[CsaResult] = []
@@ -26,6 +30,11 @@ class CsaAnalyzer:
             global_symbols = used_names.intersection(module_symbols) - local_names
             free_symbols = used_names - local_names - module_symbols
             external_symbols = global_symbols.union(free_symbols)
+            external_symbols = {
+                symbol
+                for symbol in external_symbols
+                if symbol not in builtin_names and symbol not in stdlib_modules
+            }
             results.append(
                 CsaResult(
                     unit=unit_node.definition,
