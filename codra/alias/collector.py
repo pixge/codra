@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 import ast
+from ast import NodeVisitor
 from dataclasses import dataclass, field
 
 
 @dataclass
-class AliasCollector(ast.NodeVisitor):
+class AliasCollector(NodeVisitor):
+    """AST visitor collecting top-level alias assignments via NodeVisitor."""
     aliases: dict[str, str] = field(default_factory=dict)
     depth: int = 0
 
     def collect(self, tree: ast.AST) -> dict[str, str]:
-        self.visit(tree)
+        super().visit(tree)
         return dict(self.aliases)
 
     def visit_Module(self, node: ast.Module) -> None:
         self.depth += 1
         for statement in node.body:
-            self.visit(statement)
+            super().visit(statement)
         self.depth -= 1
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:

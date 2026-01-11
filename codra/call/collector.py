@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import ast
+from ast import NodeVisitor
 from dataclasses import dataclass, field
 
 
 @dataclass
-class CallCollector(ast.NodeVisitor):
+class CallCollector(NodeVisitor):
+    """AST visitor collecting call expressions via NodeVisitor."""
     calls: list[str] = field(default_factory=list)
 
     def collect(self, node: ast.AST) -> list[str]:
         for statement in node.body:
-            self.visit(statement)
+            super().visit(statement)
         return list(self.calls)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
@@ -28,4 +30,4 @@ class CallCollector(ast.NodeVisitor):
         elif isinstance(node.func, ast.Attribute):
             if isinstance(node.func.value, ast.Name) and node.func.value.id == "self":
                 self.calls.append(f"self.{node.func.attr}")
-        self.generic_visit(node)
+        super().generic_visit(node)

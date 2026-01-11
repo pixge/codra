@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+from ast import NodeVisitor
 from dataclasses import dataclass, field
 
 from .definition import UnitDefinition
@@ -8,7 +9,8 @@ from .node import UnitNode
 
 
 @dataclass
-class UnitNodeCollector(ast.NodeVisitor):
+class UnitNodeCollector(NodeVisitor):
+    """AST visitor collecting unit nodes via NodeVisitor."""
     file_path: str
     units: list[UnitNode] = field(default_factory=list)
     class_stack: list[str] = field(default_factory=list)
@@ -16,7 +18,7 @@ class UnitNodeCollector(ast.NodeVisitor):
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self.class_stack.append(node.name)
-        self.generic_visit(node)
+        super().generic_visit(node)
         self.class_stack.pop()
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
@@ -51,5 +53,5 @@ class UnitNodeCollector(ast.NodeVisitor):
         )
         self.units.append(UnitNode(definition=definition, node=node))
         self.function_stack.append(name)
-        self.generic_visit(node)
+        super().generic_visit(node)
         self.function_stack.pop()
