@@ -44,7 +44,7 @@ class IndirectionAnalyzer:
                     method_name = name.split(".", 1)[1]
                     if method_name in class_methods.get(class_name, set()):
                         resolved_calls.append(f"{class_name}.{method_name}")
-                        continue
+                    continue
                 resolved = self._resolve_alias(name, aliases)
                 if resolved in function_names:
                     resolved_calls.append(resolved)
