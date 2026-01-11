@@ -40,10 +40,11 @@ class IndirectionAnalyzer:
             resolved_calls: list[str] = []
             unresolved_calls: set[str] = set()
             for name in call_names:
-                if name.startswith("self.") and class_name:
-                    method_name = name.split(".", 1)[1]
-                    if method_name in class_methods.get(class_name, set()):
-                        resolved_calls.append(f"{class_name}.{method_name}")
+                if name.startswith("self."):
+                    if class_name:
+                        method_name = name.split(".", 1)[1]
+                        if method_name in class_methods.get(class_name, set()):
+                            resolved_calls.append(f"{class_name}.{method_name}")
                     continue
                 resolved = self._resolve_alias(name, aliases)
                 if resolved in function_names:
