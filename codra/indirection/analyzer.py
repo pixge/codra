@@ -16,16 +16,16 @@ from .result import IndirectionResult
 @dataclass
 class IndirectionAnalyzer:
     def analyze_file(self, file_path: str) -> list[IndirectionResult]:
-        with open(file_path, "r", encoding="utf-8") as handle:
-            source = handle.read()
-        tree = ast.parse(source, filename=file_path)
-        function_names = FunctionDefinitionCollector().collect(tree)
+        tree = self._parse_file(file_path)
+        function_names = self._collect_function_definitions(tree)
         class_methods = self._collect_class_methods(tree)
-        aliases = AliasCollector().collect(tree)
+        aliases = self._collect_aliases(tree)
         module_symbols = ModuleSymbolCollector().collect(tree)
         builtin_names = set(dir(builtins))
         stdlib_modules = set(sys.stdlib_module_names)
-        call_graph = self._build_call_graph(tree, function_names, class_methods, aliases)
+        call_graph = self._collect_call_graph(
+            tree, function_names, class_methods, aliases
+        )
         depth_cache: dict[str, int] = {}
         results: list[IndirectionResult] = []
         unit_collector = UnitNodeCollector(file_path=file_path)
@@ -57,16 +57,9 @@ class IndirectionAnalyzer:
                     continue
                 else:
                     unresolved_calls.add(name)
-            call_depths = [
-                1 + self._depth(call_name, call_graph, depth_cache)
-                for call_name in resolved_calls
-            ]
-            if call_depths:
-                id_max = max(call_depths)
-                id_avg = sum(call_depths) / len(call_depths)
-            else:
-                id_max = 0
-                id_avg = 0.0
+            id_max, id_avg = self._calculate_indirection_depths(
+                resolved_calls, call_graph, depth_cache
+            )
             results.append(
                 IndirectionResult(
                     unit=unit_node.definition,
@@ -76,6 +69,17 @@ class IndirectionAnalyzer:
                 )
             )
         return results
+
+    def _parse_file(self, file_path: str) -> ast.AST:
+        with open(file_path, "r", encoding="utf-8") as handle:
+            source = handle.read()
+        return ast.parse(source, filename=file_path)
+
+    def _collect_function_definitions(self, tree: ast.AST) -> set[str]:
+        return FunctionDefinitionCollector().collect(tree)
+
+    def _collect_aliases(self, tree: ast.AST) -> dict[str, str]:
+        return AliasCollector().collect(tree)
 
     def _collect_class_methods(self, tree: ast.AST) -> dict[str, set[str]]:
         class_methods: dict[str, set[str]] = {}
@@ -89,7 +93,7 @@ class IndirectionAnalyzer:
                 class_methods[node.name] = methods
         return class_methods
 
-    def _build_call_graph(
+    def _collect_call_graph(
         self,
         tree: ast.AST,
         function_names: set[str],
@@ -159,3 +163,17 @@ class IndirectionAnalyzer:
             depth = max(depth, 1 + self._depth(callee, call_graph, depth_cache))
         depth_cache[name] = depth
         return depth
+
+    def _calculate_indirection_depths(
+        self,
+        resolved_calls: list[str],
+        call_graph: dict[str, list[str]],
+        depth_cache: dict[str, int],
+    ) -> tuple[int, float]:
+        call_depths = [
+            1 + self._depth(call_name, call_graph, depth_cache)
+            for call_name in resolved_calls
+        ]
+        if not call_depths:
+            return 0, 0.0
+        return max(call_depths), sum(call_depths) / len(call_depths)
