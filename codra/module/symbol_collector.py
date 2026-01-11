@@ -67,15 +67,18 @@ class ModuleSymbolCollector(NodeVisitor):
         super().generic_visit(node)
 
     def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
-        if isinstance(node.name, str):
-            self.symbols.add(node.name)
-        elif node.name is not None:
-            self.symbols.update(self._extract_target_names(node.name))
+        handler_name = node.name
+        is_handler_name = isinstance(handler_name, str)
+        if is_handler_name:
+            self.symbols.add(handler_name)
+        elif handler_name is not None:
+            self.symbols.update(self._extract_target_names(handler_name))
         super().generic_visit(node)
 
     def _extract_target_names(self, node: ast.AST) -> set[str]:
         names: set[str] = set()
         for target in ast.walk(node):
-            if isinstance(target, ast.Name):
+            is_name = isinstance(target, ast.Name)
+            if is_name:
                 names.add(target.id)
         return names

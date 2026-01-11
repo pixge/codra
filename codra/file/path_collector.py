@@ -12,6 +12,7 @@ class FilePathCollector:
             dirnames.sort()
             filenames.sort()
             for filename in filenames:
-                if filename.endswith(".py"):
+                is_python_file = filename.endswith(".py")
+                if is_python_file:
                     paths.append(os.path.join(current_root, filename))
         return paths

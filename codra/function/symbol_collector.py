@@ -36,15 +36,19 @@ class FunctionSymbolCollector(NodeVisitor):
     def visit_Name(self, node: ast.Name) -> None:
         context = node.ctx
         name = node.id
-        if self._is_load_context(context):
+        is_load_context = self._is_load_context(context)
+        is_store_or_del_context = self._is_store_or_del_context(context)
+        if is_load_context:
             self.usage.used_names.add(name)
-        elif self._is_store_or_del_context(context):
-            if self._is_declared_nonlocal_or_global(name):
+        elif is_store_or_del_context:
+            is_declared_nonlocal_or_global = self._is_declared_nonlocal_or_global(name)
+            if is_declared_nonlocal_or_global:
                 return
             self.usage.locals.add(name)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
-        if self._is_self_attribute_read(node):
+        is_self_attribute_read = self._is_self_attribute_read(node)
+        if is_self_attribute_read:
             self.usage.self_fields_read.add(node.attr)
         super().generic_visit(node)
 
@@ -83,7 +87,8 @@ class FunctionSymbolCollector(NodeVisitor):
 
     def _is_self_attribute_read(self, node: ast.Attribute) -> bool:
         context = node.ctx
-        if not self._is_load_context(context):
+        is_load_context = self._is_load_context(context)
+        if not is_load_context:
             return False
         value = node.value
         return isinstance(value, ast.Name) and value.id == "self"

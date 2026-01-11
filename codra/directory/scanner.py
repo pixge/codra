@@ -17,7 +17,8 @@ class DirectoryScanner:
             dirnames.sort()
             filenames.sort()
             for filename in filenames:
-                if not filename.endswith(".py"):
+                is_python_file = filename.endswith(".py")
+                if not is_python_file:
                     continue
                 file_path = os.path.join(current_root, filename)
                 units.extend(self.file_scanner.scan_file(file_path))
