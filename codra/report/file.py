@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .unit_report import UnitReport
+from ..unit.overview import UnitReport
 
 
 @dataclass(frozen=True)

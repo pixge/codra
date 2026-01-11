@@ -4,7 +4,7 @@ import ast
 from dataclasses import dataclass
 
 from .function_extractor import FunctionExtractor
-from .unit_definition import UnitDefinition
+from .unit.definition import UnitDefinition
 
 
 @dataclass

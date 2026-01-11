@@ -7,7 +7,7 @@ from .bps_result import BpsResult
 from .condition_metrics_collector import ConditionMetricsCollector
 from .function_symbol_collector import FunctionSymbolCollector
 from .if_collector import IfCollector
-from .unit_node_collector import UnitNodeCollector
+from .unit.node_collector import UnitNodeCollector
 
 
 @dataclass

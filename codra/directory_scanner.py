@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass, field
 
 from .python_file_scanner import PythonFileScanner
-from .unit_definition import UnitDefinition
+from .unit.definition import UnitDefinition
 
 
 @dataclass

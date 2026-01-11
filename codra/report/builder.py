@@ -1,19 +1,23 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
-from .bps_analyzer import BpsAnalyzer
-from .csa_analyzer import CsaAnalyzer
-from .file_path_collector import FilePathCollector
-from .file_report import FileReport
-from .indirection_analyzer import IndirectionAnalyzer
-from .report import Report
-from .report_summary import ReportSummary
-from .threshold_config import ThresholdConfig
-from .unit_definition import UnitDefinition
-from .unit_key import UnitKey
-from .unit_metrics import UnitMetrics
-from .unit_report import UnitReport
+from ..bps_analyzer import BpsAnalyzer
+from ..csa_analyzer import CsaAnalyzer
+from ..file_path_collector import FilePathCollector
+from ..indirection_analyzer import IndirectionAnalyzer
+from ..threshold_config import ThresholdConfig
+from ..unit.definition import UnitDefinition
+from ..unit.key import UnitKey
+from ..unit.metrics import UnitMetrics
+from ..unit.overview import UnitReport
+from .file import FileReport
+from .model import Report
+from .summary import ReportSummary
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -24,10 +28,12 @@ class ReportBuilder:
     path_collector: FilePathCollector
 
     def build(self, root_path: str) -> Report:
+        logger.info("Collecting files from %s", root_path)
         file_paths = self.path_collector.collect(root_path)
         files: list[FileReport] = []
         total_units = 0
         for file_path in file_paths:
+            logger.info("Analyzing %s", file_path)
             csa_results = self.csa_analyzer.analyze_file(file_path)
             indirection_results = self.indirection_analyzer.analyze_file(file_path)
             bps_results = self.bps_analyzer.analyze_file(file_path)

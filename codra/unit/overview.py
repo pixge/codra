@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .unit_definition import UnitDefinition
-from .unit_metrics import UnitMetrics
+from .definition import UnitDefinition
+from .metrics import UnitMetrics
 
 
 @dataclass(frozen=True)

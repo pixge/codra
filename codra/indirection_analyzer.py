@@ -7,7 +7,7 @@ from .alias_collector import AliasCollector
 from .call_collector import CallCollector
 from .function_definition_collector import FunctionDefinitionCollector
 from .indirection_result import IndirectionResult
-from .unit_node_collector import UnitNodeCollector
+from .unit.node_collector import UnitNodeCollector
 
 
 @dataclass

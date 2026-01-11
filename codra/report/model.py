@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .file_report import FileReport
-from .report_summary import ReportSummary
+from .file import FileReport
+from .summary import ReportSummary
 
 
 @dataclass(frozen=True)

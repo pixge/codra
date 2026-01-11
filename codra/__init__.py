@@ -5,10 +5,10 @@ from .csa_result import CsaResult
 from .directory_scanner import DirectoryScanner
 from .indirection_analyzer import IndirectionAnalyzer
 from .indirection_result import IndirectionResult
-from .report import Report
-from .report_builder import ReportBuilder
-from .report_serializer import ReportSerializer
-from .unit_definition import UnitDefinition
+from .report.builder import ReportBuilder
+from .report.model import Report
+from .report.serializer import ReportSerializer
+from .unit.definition import UnitDefinition
 
 __all__ = [
     "BpsAnalyzer",

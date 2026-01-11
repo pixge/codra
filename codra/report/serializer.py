@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict
 from dataclasses import dataclass
 
-from .report import Report
+from .model import Report
 
 
 @dataclass

@@ -3,8 +3,8 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 
-from .unit_definition import UnitDefinition
-from .unit_node import UnitNode
+from .definition import UnitDefinition
+from .node import UnitNode
 
 
 @dataclass

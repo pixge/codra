@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 
-from .unit_definition import UnitDefinition
+from .unit.definition import UnitDefinition
 
 
 @dataclass
