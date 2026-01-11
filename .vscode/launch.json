@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug codra (-m)",
+      "type": "python",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "module": "codra.cli",
+      "args": [
+        "${workspaceFolder}/codra",
+        "--threshold-csa", "5",
+        "--threshold-id", "2",
+        "--threshold-bps", "0.7"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}
