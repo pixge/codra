@@ -38,5 +38,12 @@ class ConditionMetricsCollector(NodeVisitor):
         super().generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> None:
-        if isinstance(node.ctx, ast.Load) and node.id not in self.local_names:
+        if self._is_external_name(node):
             self.external_refs += 1
+
+    def _is_external_name(self, node: ast.Name) -> bool:
+        context = node.ctx
+        is_load = isinstance(context, ast.Load)
+        name = node.id
+        is_local = name in self.local_names
+        return is_load and not is_local
