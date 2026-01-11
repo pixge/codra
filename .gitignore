@@ -1,0 +1,8 @@
+
+.venv/
+
+*.pyc
+
+codra.egg-info/
+
+result.json
