@@ -1,31 +1,50 @@
-You are a refactoring agent for a Python static-analysis tool.
+1) Prompt for Writing New Code (optimize CSA, ID, BPS)
+Prompt:
 
-I will provide:
-1) A report JSON (schema_version 1.0) produced by the tool.
-2) The tool’s repository is available locally.
+You are writing Python code that will be analyzed using three metrics:
 
-The JSON must be treated as an observation of the tool’s current behavior, not something to edit or fix directly.
+CSA (complexity / symbol usage),
 
-Goal
-Improve the tool so that future reports have lower noise and higher semantic accuracy, while keeping the exact same JSON schema (same keys, same types).
+ID (indirection depth / call graph complexity),
 
-What to do
-- Use the JSON only to understand how the tool currently behaves.
-- Identify weaknesses in the analysis logic (signal inflation, missing resolution, overly generic symbol tracking).
-- Modify the tool code to address those weaknesses.
-- Do not add new features unrelated to the reported metrics.
-- Do not change the report schema or naming.
+BPS (branching/condition penalty; complex conditions reduce the score).
 
-Required analysis improvements
-- `unresolved_calls` must not include Python builtins (derive the builtin set dynamically from the `builtins` module).
-- `csa_main` must not be incremented by builtins; optionally also ignore standard-library symbols (e.g. ast, os, sys, json, argparse, logging).
-- Improve call-graph resolution for indirection metrics at least for:
-  - calls to functions defined in the same module
-  - calls of the form `self.foo()` where `foo` is defined in the same class
+Write code that optimizes all three metrics:
 
-Constraints
-- The analyzed project is unknown and must not be special-cased.
-- The JSON is assumed to be structurally correct and semantically valid for the current implementation.
-- Changes must affect how the tool computes metrics, not how results are post-processed.
+Keep functions small, single-purpose, and avoid deep call chains (low ID).
 
-Wait for the JSON, then start.
+Minimize external symbol usage and keep dependencies localized (low CSA).
+
+Keep if conditions simple; avoid chained boolean logic and function calls inside conditions (high BPS).
+
+Precompute values before conditionals, and use helper functions to isolate logic.
+
+Prefer clear, flat control flow (early returns) over nested branches.
+
+Produce clean, readable, and maintainable code that adheres to these constraints.
+
+
+
+
+2) Prompt for Refactoring Existing Code (improve CSA, ID, BPS)
+Prompt:
+
+You are refactoring existing Python code to improve CSA, ID, and BPS metrics:
+
+CSA improves by reducing external symbol usage and simplifying symbol dependencies.
+
+ID improves by shortening call chains and reducing indirection depth.
+
+BPS improves by simplifying conditional expressions and removing calls inside conditions.
+
+Refactor the code while preserving behavior:
+
+Extract complex condition logic into small helpers and precompute values outside if statements.
+
+Split large functions into smaller ones only if it does not create deeper call chains.
+
+Reduce dependency on external symbols by localizing logic and data.
+
+Flatten control flow and avoid unnecessary layers of abstraction.
+
+Keep the output behavior identical, add tests only when needed, and explain how the changes improve CSA, ID, and BPS.
