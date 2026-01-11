@@ -60,14 +60,18 @@ class IndirectionAnalyzer:
                 if unit_node.definition.kind == "method"
                 else None
             )
+            class_method_names = (
+                class_methods.get(class_name, set()) if class_name else set()
+            )
             call_names = call_map.get(unit_node.definition.qualified_id, [])
             resolved_calls: list[str] = []
             unresolved_calls: set[str] = set()
             for name in call_names:
-                if name.startswith("self."):
+                is_self_call = name.startswith("self.")
+                if is_self_call:
                     if class_name:
                         method_name = name.split(".", 1)[1]
-                        if method_name in class_methods.get(class_name, set()):
+                        if method_name in class_method_names:
                             resolved_calls.append(f"{class_name}.{method_name}")
                     continue
                 resolved = self._resolve_alias(name, aliases, alias_cache)
