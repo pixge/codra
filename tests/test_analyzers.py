@@ -9,10 +9,15 @@ from codra.bps.result import BpsResult
 from codra.csa.analyzer import CsaAnalyzer
 from codra.csa.result import CsaResult
 from codra.function.symbol_collector import FunctionSymbolCollector
-from codra.indirection.analyzer import IndirectionAnalyzer
+from codra.indirection.analyzer import (
+    IndirectionAnalyzer,
+    collect_calls_by_unit,
+    resolve_alias,
+)
 from codra.indirection.result import IndirectionResult
 from codra.report.builder import ReportBuilder
 from codra.unit.definition import UnitDefinition
+from codra.unit.node_collector import UnitNodeCollector
 from codra.unit.overview import UnitReport
 
 
@@ -115,8 +120,11 @@ class IndirectionAnalyzerHelperTests(unittest.TestCase):
             aliases = analyzer._collect_aliases(tree)
             self.assertEqual(aliases, {"alias": "bar"})
             class_methods = analyzer._collect_class_methods(tree)
+            unit_collector = UnitNodeCollector(file_path=file_path)
+            unit_collector.visit(tree)
+            call_map = collect_calls_by_unit(unit_collector.units)
             call_graph = analyzer._collect_call_graph(
-                tree, function_names, class_methods, aliases
+                function_names, class_methods, aliases, call_map, {}
             )
             self.assertEqual(call_graph["foo"], ["bar"])
             self.assertEqual(call_graph["baz"], ["bar"])
@@ -125,6 +133,52 @@ class IndirectionAnalyzerHelperTests(unittest.TestCase):
             )
             self.assertEqual(id_max, 1)
             self.assertEqual(id_avg, 1.0)
+
+    def test_helpers_resolve_alias_chain_and_class_methods(self) -> None:
+        source = textwrap.dedent(
+            """
+            def helper():
+                pass
+
+            alias = helper
+            alias2 = alias
+
+            def uses_alias():
+                alias2()
+
+            class Foo:
+                def ping(self):
+                    self.pong()
+                    alias2()
+
+                def pong(self):
+                    alias()
+            """
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_path = f"{tmpdir}/sample.py"
+            with open(file_path, "w", encoding="utf-8") as handle:
+                handle.write(source)
+            analyzer = IndirectionAnalyzer()
+            tree = analyzer._parse_file(file_path)
+            aliases = analyzer._collect_aliases(tree)
+            self.assertEqual(resolve_alias("alias2", aliases), "helper")
+            function_names = analyzer._collect_function_definitions(tree)
+            class_methods = analyzer._collect_class_methods(tree)
+            unit_collector = UnitNodeCollector(file_path=file_path)
+            unit_collector.visit(tree)
+            call_map = collect_calls_by_unit(unit_collector.units)
+            call_graph = analyzer._collect_call_graph(
+                function_names, class_methods, aliases, call_map, {}
+            )
+            self.assertEqual(call_graph["uses_alias"], ["helper"])
+            self.assertEqual(
+                call_graph["Foo.ping"], ["Foo.pong", "helper"]
+            )
+            results = analyzer.analyze_file(file_path)
+            results_by_unit = {result.unit.qualified_id: result for result in results}
+            self.assertEqual(results_by_unit["uses_alias"].id_max, 1)
+            self.assertEqual(results_by_unit["Foo.ping"].id_max, 2)
 
 
 class ReportBuilderHelperTests(unittest.TestCase):
