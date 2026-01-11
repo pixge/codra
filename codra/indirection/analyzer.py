@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import ast
+import builtins
+import sys
 from dataclasses import dataclass
 
 from ..alias.collector import AliasCollector
 from ..call.collector import CallCollector
 from ..function.definition_collector import FunctionDefinitionCollector
+from ..module.symbol_collector import ModuleSymbolCollector
 from ..unit.node_collector import UnitNodeCollector
 from .result import IndirectionResult
 
@@ -18,6 +21,9 @@ class IndirectionAnalyzer:
         tree = ast.parse(source, filename=file_path)
         function_names = FunctionDefinitionCollector().collect(tree)
         aliases = AliasCollector().collect(tree)
+        module_symbols = ModuleSymbolCollector().collect(tree)
+        builtin_names = set(dir(builtins))
+        stdlib_modules = set(sys.stdlib_module_names)
         call_graph = self._build_call_graph(tree, function_names, aliases)
         depth_cache: dict[str, int] = {}
         results: list[IndirectionResult] = []
@@ -31,6 +37,12 @@ class IndirectionAnalyzer:
                 resolved = self._resolve_alias(name, aliases)
                 if resolved in function_names:
                     resolved_calls.append(resolved)
+                elif resolved in module_symbols:
+                    continue
+                elif resolved in builtin_names:
+                    continue
+                elif resolved in stdlib_modules:
+                    continue
                 else:
                     unresolved_calls.add(name)
             call_depths = [
