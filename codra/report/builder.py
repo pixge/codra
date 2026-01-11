@@ -4,9 +4,12 @@ import logging
 from dataclasses import dataclass
 
 from ..bps.analyzer import BpsAnalyzer
+from ..bps.result import BpsResult
 from ..csa.analyzer import CsaAnalyzer
+from ..csa.result import CsaResult
 from ..file.path_collector import FilePathCollector
 from ..indirection.analyzer import IndirectionAnalyzer
+from ..indirection.result import IndirectionResult
 from ..threshold.config import ThresholdConfig
 from ..unit.definition import UnitDefinition
 from ..unit.key import UnitKey
@@ -34,26 +37,15 @@ class ReportBuilder:
         total_units = 0
         for file_path in file_paths:
             logger.info("Analyzing %s", file_path)
-            csa_results = self.csa_analyzer.analyze_file(file_path)
-            indirection_results = self.indirection_analyzer.analyze_file(file_path)
-            bps_results = self.bps_analyzer.analyze_file(file_path)
-            csa_map = {self._key(result.unit): result for result in csa_results}
-            indirection_map = {
-                self._key(result.unit): result for result in indirection_results
-            }
-            bps_map = {self._key(result.unit): result for result in bps_results}
-            keys = sorted(
-                {**csa_map, **indirection_map, **bps_map}.keys(),
-                key=self._sort_key,
+            csa_results, indirection_results, bps_results = self._collect_file_analysis(
+                file_path
             )
-            units: list[UnitReport] = []
-            for key in keys:
-                unit = self._resolve_unit(key, csa_map, indirection_map, bps_map)
-                metrics = self._resolve_metrics(key, csa_map, indirection_map, bps_map)
-                units.append(UnitReport(unit=unit, metrics=metrics))
-            files.append(FileReport(file_path=file_path, units=units))
-            total_units += len(units)
-        summary = ReportSummary(total_files=len(files), total_units=total_units)
+            file_report, unit_count = self._build_file_report(
+                file_path, csa_results, indirection_results, bps_results
+            )
+            files.append(file_report)
+            total_units += unit_count
+        summary = self._build_summary(files, total_units)
         return Report(
             schema_version="1.0",
             language="python",
@@ -87,6 +79,40 @@ class ReportBuilder:
 
     def _sort_key(self, key: UnitKey) -> tuple[str, int, int, str]:
         return (key.qualified_id, key.start_line, key.end_line, key.kind)
+
+    def _collect_file_analysis(
+        self, file_path: str
+    ) -> tuple[list[CsaResult], list[IndirectionResult], list[BpsResult]]:
+        csa_results = self.csa_analyzer.analyze_file(file_path)
+        indirection_results = self.indirection_analyzer.analyze_file(file_path)
+        bps_results = self.bps_analyzer.analyze_file(file_path)
+        return csa_results, indirection_results, bps_results
+
+    def _build_file_report(
+        self,
+        file_path: str,
+        csa_results: list[CsaResult],
+        indirection_results: list[IndirectionResult],
+        bps_results: list[BpsResult],
+    ) -> tuple[FileReport, int]:
+        csa_map = {self._key(result.unit): result for result in csa_results}
+        indirection_map = {
+            self._key(result.unit): result for result in indirection_results
+        }
+        bps_map = {self._key(result.unit): result for result in bps_results}
+        keys = sorted(
+            {**csa_map, **indirection_map, **bps_map}.keys(),
+            key=self._sort_key,
+        )
+        units: list[UnitReport] = []
+        for key in keys:
+            unit = self._resolve_unit(key, csa_map, indirection_map, bps_map)
+            metrics = self._resolve_metrics(key, csa_map, indirection_map, bps_map)
+            units.append(UnitReport(unit=unit, metrics=metrics))
+        return FileReport(file_path=file_path, units=units), len(units)
+
+    def _build_summary(self, files: list[FileReport], total_units: int) -> ReportSummary:
+        return ReportSummary(total_files=len(files), total_units=total_units)
 
     def _resolve_unit(
         self,
