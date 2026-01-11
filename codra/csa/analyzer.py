@@ -3,10 +3,10 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from .csa_result import CsaResult
-from .function_symbol_collector import FunctionSymbolCollector
-from .module_symbol_collector import ModuleSymbolCollector
-from .unit.node_collector import UnitNodeCollector
+from ..function.symbol_collector import FunctionSymbolCollector
+from ..module.symbol_collector import ModuleSymbolCollector
+from ..unit.node_collector import UnitNodeCollector
+from .result import CsaResult
 
 
 @dataclass

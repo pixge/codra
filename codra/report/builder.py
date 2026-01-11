@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from ..bps_analyzer import BpsAnalyzer
-from ..csa_analyzer import CsaAnalyzer
-from ..file_path_collector import FilePathCollector
-from ..indirection_analyzer import IndirectionAnalyzer
-from ..threshold_config import ThresholdConfig
+from ..bps.analyzer import BpsAnalyzer
+from ..csa.analyzer import CsaAnalyzer
+from ..file.path_collector import FilePathCollector
+from ..indirection.analyzer import IndirectionAnalyzer
+from ..threshold.config import ThresholdConfig
 from ..unit.definition import UnitDefinition
 from ..unit.key import UnitKey
 from ..unit.metrics import UnitMetrics

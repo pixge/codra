@@ -3,11 +3,11 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from .bps_result import BpsResult
-from .condition_metrics_collector import ConditionMetricsCollector
-from .function_symbol_collector import FunctionSymbolCollector
-from .if_collector import IfCollector
-from .unit.node_collector import UnitNodeCollector
+from ..condition.collector import ConditionMetricsCollector
+from ..function.symbol_collector import FunctionSymbolCollector
+from ..if_.collector import IfCollector
+from ..unit.node_collector import UnitNodeCollector
+from .result import BpsResult
 
 
 @dataclass

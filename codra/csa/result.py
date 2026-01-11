@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .unit.definition import UnitDefinition
+from ..unit.definition import UnitDefinition
 
 
 @dataclass(frozen=True)

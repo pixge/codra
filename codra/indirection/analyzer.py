@@ -3,11 +3,11 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from .alias_collector import AliasCollector
-from .call_collector import CallCollector
-from .function_definition_collector import FunctionDefinitionCollector
-from .indirection_result import IndirectionResult
-from .unit.node_collector import UnitNodeCollector
+from ..alias.collector import AliasCollector
+from ..call.collector import CallCollector
+from ..function.definition_collector import FunctionDefinitionCollector
+from ..unit.node_collector import UnitNodeCollector
+from .result import IndirectionResult
 
 
 @dataclass

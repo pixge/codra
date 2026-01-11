@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
-from .python_file_scanner import PythonFileScanner
-from .unit.definition import UnitDefinition
+from ..python.file_scanner import PythonFileScanner
+from ..unit.definition import UnitDefinition
 
 
 @dataclass

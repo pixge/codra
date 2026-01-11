@@ -4,15 +4,15 @@ import argparse
 import logging
 import sys
 
-from .bps_analyzer import BpsAnalyzer
-from .csa_analyzer import CsaAnalyzer
-from .cli_args import CliArgs
-from .cli_dependencies import CliDependencies
-from .file_path_collector import FilePathCollector
-from .indirection_analyzer import IndirectionAnalyzer
-from .report.builder import ReportBuilder
-from .report.serializer import ReportSerializer
-from .threshold_config import ThresholdConfig
+from ..bps.analyzer import BpsAnalyzer
+from ..csa.analyzer import CsaAnalyzer
+from ..file.path_collector import FilePathCollector
+from ..indirection.analyzer import IndirectionAnalyzer
+from ..report.builder import ReportBuilder
+from ..report.serializer import ReportSerializer
+from ..threshold.config import ThresholdConfig
+from .args import CliArgs
+from .dependencies import CliDependencies
 
 
 logger = logging.getLogger(__name__)

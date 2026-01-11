@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass, field
 
-from .function_symbol_usage import FunctionSymbolUsage
+from .symbol_usage import FunctionSymbolUsage
 
 
 @dataclass

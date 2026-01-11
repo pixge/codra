@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from .condition_metrics import ConditionMetrics
+from .metrics import ConditionMetrics
 
 
 @dataclass

@@ -3,8 +3,8 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 
-from .function_extractor import FunctionExtractor
-from .unit.definition import UnitDefinition
+from ..function.extractor import FunctionExtractor
+from ..unit.definition import UnitDefinition
 
 
 @dataclass
