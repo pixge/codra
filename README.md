@@ -20,13 +20,19 @@ pip install -e .
 Analizza un percorso e stampa il report JSON su stdout:
 
 ```bash
-python3 -m codra.cli /percorso/progetto
+python3 -m codra.cli.main /percorso/progetto
 ```
 
 Esempio con soglie:
 
 ```bash
-python3 -m codra.cli /percorso/progetto --threshold-csa 10 --threshold-id 2 --threshold-bps 0.7
+python3 -m codra.cli.main /percorso/progetto --threshold-csa 10 --threshold-id 2 --threshold-bps 0.7
+```
+
+Esempio con log e file di output:
+
+```bash
+python3 -m codra.cli.main /percorso/progetto --log-level DEBUG --output report.json
 ```
 
 ## Viewer React (opzionale)
