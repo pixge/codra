@@ -1,14 +1,14 @@
-from .bps_analyzer import BpsAnalyzer
-from .bps_result import BpsResult
-from .csa_analyzer import CsaAnalyzer
-from .csa_result import CsaResult
-from .directory_scanner import DirectoryScanner
-from .indirection_analyzer import IndirectionAnalyzer
-from .indirection_result import IndirectionResult
-from .report import Report
-from .report_builder import ReportBuilder
-from .report_serializer import ReportSerializer
-from .unit_definition import UnitDefinition
+from .bps.analyzer import BpsAnalyzer
+from .bps.result import BpsResult
+from .csa.analyzer import CsaAnalyzer
+from .csa.result import CsaResult
+from .directory.scanner import DirectoryScanner
+from .indirection.analyzer import IndirectionAnalyzer
+from .indirection.result import IndirectionResult
+from .report.builder import ReportBuilder
+from .report.model import Report
+from .report.serializer import ReportSerializer
+from .unit.definition import UnitDefinition
 
 __all__ = [
     "BpsAnalyzer",

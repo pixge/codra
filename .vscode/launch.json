@@ -9,12 +9,14 @@
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
       },
-      "module": "codra.cli",
+      "module": "codra.cli.main",
       "args": [
         "${workspaceFolder}/codra",
         "--threshold-csa", "5",
         "--threshold-id", "2",
-        "--threshold-bps", "0.7"
+        "--threshold-bps", "0.7",
+        "--log-level", "DEBUG",
+        "--output", "${workspaceFolder}/report.json"
       ],
       "console": "integratedTerminal",
       "justMyCode": false
